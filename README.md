@@ -2,7 +2,7 @@
 
 一个给家庭电视、Android 盒子和安卓平板使用的轻量桌面。遥控器、鼠标、触屏均可操作，所有片单在同一页上下浏览。
 
-**[下载 APK](https://github.com/voanit/guoran-tv/releases/latest)** · [全部版本](https://github.com/voanit/guoran-tv/releases) · [报告问题](https://github.com/voanit/guoran-tv/issues)
+**[下载 APK](https://github.com/voanit/guoran-tv/releases/tag/v0.5.3)** · [全部版本](https://github.com/voanit/guoran-tv/releases) · [报告问题](https://github.com/voanit/guoran-tv/issues)
 
 当前为 **0.5.3 试用版**。没有广告、账号服务器或付费解锁，不附带课程、网盘账号或视频资源。可先作为普通应用试用，系统允许时再手动设为默认桌面。
 
