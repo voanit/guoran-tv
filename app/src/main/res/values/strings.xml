@@ -1,0 +1,4 @@
+<resources>
+    <string name="mouse_navigation_label">果然 TV 鼠标导航</string>
+    <string name="mouse_navigation_description">提供可拖动的返回和首页按钮，方便在网盘、文件管理器、播放器和设置中使用鼠标。到达家长设定的使用时间后显示全盒子休息页，不读取屏幕内容或文件。</string>
+</resources>

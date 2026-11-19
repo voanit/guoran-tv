@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#edf1e9">
+  <meta name="referrer" content="no-referrer">
+  <title>果然 TV · 家长管理</title>
+  <link rel="stylesheet" href="/parent.css">
+  <script src="/parent.js" defer></script>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="果然 TV 家长管理"><span class="brand-mark" aria-hidden="true">果</span><span><span id="brand-name">果然 TV</span><small>家长管理</small></span></a>
+      <button type="button" id="disconnect" class="text-button" hidden>解除本机配对</button>
+    </header>
+
+    <main>
+      <section id="pair-view" class="pair-view" aria-labelledby="pair-title">
+        <div class="pair-art" aria-hidden="true"><span class="art-screen"><span>果然 TV</span><i></i><i></i><i></i></span><span class="art-spark">✧</span><span class="art-leaf">⌁</span></div>
+        <p class="eyebrow">一点安排，更多安心</p>
+        <h1 id="pair-title">两个小世界，<br>都照顾得刚刚好。</h1>
+        <p class="pair-intro">自己命名片单，统一安排整个盒子的使用时间。</p>
+        <div class="card pair-card">
+          <h2>先和电视配个对</h2>
+          <p class="muted">手机与盒子连接同一局域网，在电视的「家长管理」中查看 6 位配对码。</p>
+          <form id="pair-form">
+            <label class="field" for="pair-code">电视上的配对码
+              <input id="pair-code" name="code" class="pair-code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="000000" required>
+            </label>
+            <p id="pair-error" class="form-error" role="alert"></p>
+            <button id="pair-submit" type="submit" class="button primary full">连接我的果然 TV <span aria-hidden="true">→</span></button>
+          </form>
+          <p class="tiny pair-foot">配对仅保存在当前浏览器会话中，请在家长自己的手机上操作。</p>
+        </div>
+        <p class="pair-space-note">同一个首页，全家一起用。<br>片单由家长自行创建，选择卡片即可打开。</p>
+      </section>
+
+      <div id="control-view" hidden>
+        <div class="connection-bar"><span class="connection-dot" id="connection-dot" aria-hidden="true"></span><span id="connection-status" role="status">正在连接盒子</span><button type="button" id="refresh" class="text-button">刷新</button></div>
+        <p id="connection-error" class="connection-error" role="alert" hidden></p>
+        <div id="notice" class="notice" role="status" hidden></div>
+
+        <section class="intro">
+          <p class="eyebrow">今天也要看得开心</p>
+          <h1>给各自的喜欢，<br class="mobile-break">留出刚好的时间。</h1>
+          <p class="muted">创建自己的片单、收藏课程，让全家在同一个首页找到喜欢的内容。</p>
+        </section>
+
+        <form id="box-form" class="card">
+          <h3>电视桌面名称</h3>
+          <label class="field" for="box-name">首页显示的名称<input id="box-name" maxlength="24" required></label>
+          <p id="box-error" class="form-error" role="alert"></p>
+          <div class="form-footer"><span class="tiny" id="box-draft">已与盒子同步</span><button type="submit" class="button primary small" data-mutation>保存名称</button></div>
+        </form>
+        <p class="space-note tiny">所有片单与应用共用一套时间规则，片单只负责分类，不区分观看身份。</p>
+
+        <nav class="tabs" role="tablist" aria-label="家长管理栏目">
+          <button id="tab-watch" type="button" role="tab" aria-selected="true" aria-controls="panel-watch" tabindex="0" data-tab="watch">观看安排</button>
+          <button id="tab-resources" type="button" role="tab" aria-selected="false" aria-controls="panel-resources" tabindex="-1" data-tab="resources">内容资源</button>
+          <button id="tab-apps" type="button" role="tab" aria-selected="false" aria-controls="panel-apps" tabindex="-1" data-tab="apps">应用管理</button>
+        </nav>
+
+        <section id="panel-watch" role="tabpanel" aria-labelledby="tab-watch">
+          <div class="card usage-card">
+            <div class="card-heading"><h3>今天的盒子使用</h3><span id="watch-state" class="pill">正在读取</span></div>
+            <div class="usage-main"><span class="usage-number" id="used-minutes">0<small>分钟</small></span><span class="usage-remaining">还可以看<strong id="remaining-minutes">— 分钟</strong></span></div>
+            <div class="usage-track" id="usage-meter" role="progressbar" aria-label="今日观看时间使用比例" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="usage-fill"></span></div>
+            <p id="usage-caption" class="tiny">正在读取今日时长</p>
+            <div class="button-row"><button id="pause-watch" type="button" class="button primary" data-mutation>暂停观看</button><button id="extra-time" type="button" class="button secondary" data-mutation>再加 5 分钟</button></div>
+          </div>
+
+          <form id="watch-form" class="card">
+            <div class="card-heading"><h3>安排一点好习惯</h3><span class="tiny" id="watch-child-caption">整个盒子共用</span></div>
+            <label class="field" for="daily-limit">每日总时长 <span class="input-with-unit"><input id="daily-limit" name="dailyLimit" type="number" inputmode="numeric" min="0" max="1440" step="1" required><span>分钟</span></span></label>
+            <p class="tiny field-help">0 表示不限每日总量；加时仅对今天生效。亮屏使用盒子的时间会累计，切换应用不重新计时。</p>
+            <div class="time-grid"><label class="field" for="session-limit">每次连续使用<input id="session-limit" type="number" min="1" max="180" required></label><span class="time-dash">分钟</span><label class="field" for="break-minutes">然后休息<input id="break-minutes" type="number" min="1" max="180" required></label></div>
+            <p class="tiny field-help">默认连续使用 30 分钟、休息 10 分钟。关屏休息也会计入间隔。</p>
+            <div class="time-grid"><label class="field" for="start-time">从几点开始<input id="start-time" name="startTime" type="time" required></label><span class="time-dash" aria-hidden="true">—</span><label class="field" for="end-time">到几点结束<input id="end-time" name="endTime" type="time" required></label></div>
+            <p id="schedule-help" class="tiny field-help">起止相同表示全天可用；结束时间较早表示跨午夜。到点会显示休息页，家长 PIN 可临时解锁 10 分钟。</p>
+            <p id="watch-capability" class="tiny field-help"></p>
+            <p id="watch-error" class="form-error" role="alert"></p>
+            <div class="form-footer"><span id="watch-draft" class="tiny">已与盒子同步</span><button id="watch-save" type="submit" class="button primary" data-mutation>保存安排</button></div>
+          </form>
+        </section>
+
+        <section id="panel-resources" role="tabpanel" aria-labelledby="tab-resources" hidden>
+          <p class="tiny section-help">U 盘和 SD 存储卡请在电视首页选择「本地资源」查看。本网页用于管理片单，暂不浏览盒子里的文件。</p>
+          <div class="card drive-card">
+            <div class="card-heading"><h3>自家百度网盘</h3><span class="pill subtle" id="baidu-status">未连接</span></div>
+            <p class="muted" id="baidu-description">连接后，选择自己的课程文件夹，孩子在电视内逐层浏览和播放。</p>
+            <p class="tiny section-help">使用百度官方基础接口，不接付费分享服务。新应用只能访问「我的应用数据／应用名称」；请将要看的课程自行放入该目录。</p>
+            <div class="button-row drive-actions"><button type="button" id="baidu-authorize" class="button primary small" data-mutation>连接百度账号</button><button type="button" id="baidu-disconnect" class="text-button" data-mutation hidden>断开账号</button></div>
+            <div id="baidu-authorization" class="authorization-box" hidden><p>在百度官方页面确认授权：</p><a id="baidu-auth-link" class="button secondary small" target="_blank" rel="noopener noreferrer">打开百度授权页 ↗</a><p class="tiny">若页面要求用户码，请输入 <strong id="baidu-user-code"></strong>。完成后回到这里，会自动检测。</p></div>
+            <details id="baidu-setup"><summary>首次配置开发者应用</summary><p class="tiny section-help">在 <a href="https://pan.baidu.com/union/" target="_blank" rel="noopener noreferrer">百度网盘开放平台 ↗</a> 创建个人使用的软件应用，开通基础文件列表与下载权限。请填控制台中的准确名称；不购买分享或极速流量服务。</p>
+              <form id="baidu-config-form" autocomplete="off">
+                <label class="field" for="baidu-app-name">应用名称<input id="baidu-app-name" maxlength="64" required placeholder="与百度控制台完全相同"></label>
+                <label class="field" for="baidu-app-key">AppKey<input id="baidu-app-key" type="password" autocomplete="new-password" maxlength="128" required></label>
+                <label class="field" for="baidu-secret-key">SecretKey<input id="baidu-secret-key" type="password" autocomplete="new-password" maxlength="256" required></label>
+                <p class="tiny field-help">只在家长自己的设备上填写，保存在盒子应用私有目录。不要发到聊天中。保存后输入框会清空。</p>
+                <button type="submit" class="button secondary small drive-actions" data-mutation>保存应用配置</button>
+              </form>
+            </details><p id="baidu-error" class="form-error" role="alert"></p>
+          </div>
+          <form id="new-playlist-form" class="card">
+            <h3>创建片单</h3><p class="tiny">默认不设哥哥、妹妹栏目。名称由你决定，最多 20 个片单。</p>
+            <label class="field" for="new-playlist-name">片单名称<input id="new-playlist-name" maxlength="24" placeholder="例如：英语启蒙、睡前动画" required></label>
+            <p id="new-playlist-error" class="form-error" role="alert"></p>
+            <button type="submit" class="button primary small drive-actions" data-mutation>新增片单</button>
+          </form>
+          <label class="field resource-scope-field" for="resource-scope">选择要管理的片单<select id="resource-scope"><option value="family">首页精选（不显示标题）</option></select></label>
+          <form id="shelf-form" class="card" hidden>
+            <h3>片单设置</h3>
+            <label class="field" for="shelf-name">片单名称<input id="shelf-name" name="space" type="text" maxlength="24" required></label>
+            <p class="tiny field-help">删除片单后，里面的课程会移回首页精选，不删除课程和封面。</p>
+            <p id="shelf-error" class="form-error" role="alert"></p>
+            <div class="form-footer"><button id="delete-playlist" type="button" class="text-button" data-mutation>删除片单</button><button type="submit" class="button primary small" data-mutation>保存片单名称</button></div>
+            <span class="tiny" id="shelf-draft">已与盒子同步</span>
+          </form>
+          <div class="section-heading"><div><h3 id="resources-title">首页精选</h3><p id="resource-count" class="tiny">每个栏目最多 60 份资源</p></div><button id="add-resource" type="button" class="button primary small" data-mutation>＋ 添加</button></div>
+          <div id="resource-list" class="resource-list"></div>
+          <p class="tiny section-help">用上移、下移调整电视上的显示顺序。「首页显示」关闭后，资源仍保留在内容列表。</p>
+
+          <form id="resource-form" class="card resource-form" hidden>
+            <div class="card-heading"><h3 id="resource-form-title">添加内容</h3><button id="resource-cancel" type="button" class="text-button" data-mutation>取消</button></div>
+            <p class="tiny" id="resource-form-child">选择所属片单</p>
+            <label class="field" for="resource-title">孩子看到的名称<input id="resource-title" name="title" type="text" maxlength="40" placeholder="填写你自己的内容名称" autocomplete="off" required></label>
+            <label class="field" for="resource-audience">放在哪个片单<select id="resource-audience" name="audience"><option value="family">首页精选</option></select></label>
+            <label class="field" for="resource-kind">内容来自哪里<select id="resource-kind" name="kind"><option value="baiduDrive">自家百度网盘 · 文件夹或视频</option><option value="video">视频直链 · 内置播放</option><option value="link">其他链接入口</option><option value="baidu">旧版网盘分享链接 · 仅打开本机应用</option></select></label>
+            <div id="resource-baidu" class="drive-binding"><p class="tiny" id="resource-baidu-selection">还没有选择课程目录或视频</p><button type="button" id="choose-baidu" class="button secondary small" data-mutation>选择网盘文件夹或视频</button><div id="baidu-picker" hidden><div class="picker-toolbar"><button type="button" id="baidu-picker-back" class="text-button">‹ 上一级</button><span class="tiny" id="baidu-picker-path"></span></div><p id="baidu-picker-status" class="tiny" role="status"></p><div id="baidu-picker-list" class="picker-list"></div><div class="button-row"><button type="button" id="baidu-picker-prev" class="button secondary small" hidden>上一页</button><button type="button" id="baidu-picker-next" class="button secondary small" hidden>下一页</button></div></div></div>
+            <div class="cover-editor"><div id="cover-preview" class="cover-preview" aria-label="电视封面预览"></div><label class="button secondary small cover-picker" for="cover-file">选择自己的封面<input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp"></label></div>
+            <p class="tiny field-help" id="cover-status">从手机相册选择图片，自动居中裁成 16:9 横版，并随内容一起保存到盒子。</p>
+            <label class="field" for="resource-cover">或使用内置封面<select id="resource-cover" name="cover"><option value="course">简洁默认封面</option><option value="custom">自定义图片</option><option value="blocks">方块插画</option><option value="dragon">冒险海报</option><option value="space">宇宙插画</option><option value="code">编程插画</option><option value="frozen">冰雪海报</option><option value="sofia">公主海报</option><option value="bluey">卡通海报</option></select></label>
+            <label id="resource-url-field" class="field" for="resource-url">资源地址 <span class="optional">可稍后填写</span><input id="resource-url" name="url" type="url" maxlength="4096" placeholder="https://…" autocomplete="off" spellcheck="false"></label>
+            <p class="tiny field-help" id="resource-url-help">请填盒子可以访问的视频直链。暂不填写时，电视会显示「待添加地址」。</p>
+            <label class="checkbox-row"><input id="resource-pinned" name="pinned" type="checkbox" checked><span><strong>显示在电视首页</strong><small>方便孩子直接找到这份内容</small></span></label>
+            <p id="resource-error" class="form-error" role="alert"></p>
+            <button id="resource-save" type="submit" class="button primary full" data-mutation>保存内容</button>
+          </form>
+        </section>
+
+        <section id="panel-apps" role="tabpanel" aria-labelledby="tab-apps" hidden>
+          <div class="card">
+            <div class="card-heading"><h3 id="apps-title">首页「我的应用」</h3><span class="pill subtle" id="apps-count">0 个应用</span></div>
+            <p class="tiny">应用在首页最下方集中显示，全家共用。开启一次即可；当贝市场仍从电视端家长工具进入。</p>
+            <div id="apps-list" class="apps-list"></div>
+          </div>
+          <div class="card apk-card">
+            <div class="card-heading"><h3>给电视安装应用</h3><span class="pill subtle">APK 安装包</span></div>
+            <p class="muted">从手机选择本地 APK，传到盒子后，再到电视上确认安装。</p>
+            <form id="upload-form">
+              <label class="file-picker" for="apk-file"><span class="file-symbol" aria-hidden="true">＋</span><span><strong id="file-label">选择手机里的 APK</strong><small id="file-detail">单个安装包不超过 100 MB</small></span><input id="apk-file" name="apk" type="file" accept=".apk,application/vnd.android.package-archive"></label>
+              <div id="upload-progress-wrap" class="upload-progress-wrap" hidden><progress id="upload-progress" max="100" value="0" aria-label="APK 上传进度"></progress><span id="upload-progress-label" class="tiny">准备上传</span></div>
+              <p id="upload-error" class="form-error" role="alert"></p>
+              <button id="upload-submit" type="submit" class="button primary full" data-mutation disabled>上传到盒子</button>
+            </form>
+            <p class="tiny section-help">盒子最多保留 3 个安装包。上传成功只表示文件已到盒子；安装与授权需要在电视系统界面完成。</p>
+          </div>
+          <div class="section-heading"><div><h3>盒子上的安装包</h3><p class="tiny">根据已安装应用检测状态。移除安装包可腾出名额，不会卸载应用。</p></div></div>
+          <div id="uploads-list" class="uploads-list"></div>
+        </section>
+
+        <p class="limit-note"><span aria-hidden="true">ⓘ</span><span>亮屏使用时间按整个盒子累计，含片单、网盘、本地资源和其他应用。到点阻止继续使用需要保持「果然 TV 鼠标导航」无障碍服务开启；关屏期间不累计使用时间。</span></p>
+        <footer class="page-footer"><span>一家人的小小电视时光</span><span id="server-address"></span></footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

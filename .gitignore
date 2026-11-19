@@ -1,0 +1,24 @@
+# 本地构建产物和签名私钥
+.build/
+build/
+*.apk
+*.idsig
+*.keystore
+*.jks
+*.pem
+*.p12
+*.key
+local.properties
+.DS_Store
+
+# 家庭配置、网盘授权和本地调试数据，永远不提交
+baidu-private.json*
+family.json*
+shared_prefs/
+files/
+uploads/
+covers/
+work/
+*.log
+.env
+.env.*
