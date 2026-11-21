@@ -63,6 +63,7 @@ public final class MainActivity extends Activity {
     private String driveFocusTag = "";
     private String driveError = "";
     private boolean driveLoading;
+    private boolean autoplayPending;
     private int driveRequest;
     private int driveStart;
     private JSONObject homeDriveListing;
@@ -191,6 +192,9 @@ public final class MainActivity extends Activity {
     @Override protected void onPause() {
         foreground = false;
         handler.removeCallbacks(pulse);
+        if (autoplayPending) {
+            driveRequest++; driveLoading = false; autoplayPending = false;
+        }
         // Home 或外部应用离开时立即停止内置视频，保留断点，不在后台计时。
         if (video != null) {
             stopVideo();
@@ -852,6 +856,7 @@ public final class MainActivity extends Activity {
         String courseRoot = driveCourse.optJSONObject("baidu").optString("path");
         if (!BaiduDrive.within(path, courseRoot)) { toast("只能浏览这份课程的目录"); return; }
         final int request = ++driveRequest;
+        autoplayPending = false;
         if (!path.equals(drivePath) || start != driveStart) driveFocusTag = "";
         drivePath = path; driveStart = start; driveLoading = true; driveError = ""; render();
         driveWorker.execute(() -> {
@@ -985,7 +990,7 @@ public final class MainActivity extends Activity {
             final String source = url, message = error;
             handler.post(() -> {
                 if (request != driveRequest || isFinishing() || driveCourse != course) return;
-                driveLoading = false;
+                driveLoading = false; autoplayPending = false;
                 if (!message.isEmpty()) { render(); toast(message); return; }
                 if (!driveCourseAvailable()) { exitDrive(); toast("家长更新了课程，请从首页重新打开"); return; }
                 if (!foreground || !store.canWatch(child)) { baidu.closeStreams(); render(); return; }
@@ -1000,6 +1005,79 @@ public final class MainActivity extends Activity {
         });
     }
 
+    private boolean continueDrivePlayback(JSONObject completed) {
+        JSONObject file = completed == null ? null : completed.optJSONObject("baidu");
+        JSONObject binding = driveCourse == null ? null : driveCourse.optJSONObject("baidu");
+        if (!foreground || file == null || binding == null || !binding.optBoolean("isDir")) return false;
+        String path = BaiduDrive.parentPath(file.optString("path"));
+        if (file.optString("fsId").isEmpty() || !path.equals(drivePath) || !BaiduDrive.within(path, binding.optString("path"))) return false;
+        if (!driveCourseAvailable()) { exitDrive(); toast("家长更新了课程，请从首页重新打开"); return true; }
+        JSONObject cached = null;
+        if (driveListing != null && path.equals(driveListing.optString("path"))) {
+            JSONArray entries = driveListing.optJSONArray("entries");
+            for (int index = 0; entries != null && index < entries.length(); index++) {
+                JSONObject entry = entries.optJSONObject(index);
+                if (entry != null && file.optString("fsId").equals(entry.optString("fsId"))) { cached = driveListing; break; }
+            }
+        }
+        int start = cached == null ? 0 : driveStart;
+        int request = ++driveRequest;
+        autoplayPending = true; driveLoading = true; driveError = ""; render();
+        findNextDriveVideo(driveCourse, path, file.optString("fsId"), false, start, cached, request);
+        return true;
+    }
+
+    private void findNextDriveVideo(final JSONObject course, final String path, final String completedId,
+                                   final boolean passedCurrent, final int start, final JSONObject cached, final int request) {
+        driveWorker.execute(() -> {
+            JSONObject result = null, next = null;
+            boolean passed = passedCurrent;
+            String error = "";
+            try {
+                result = cached == null ? baidu.list(path, start) : cached;
+                JSONArray entries = result.optJSONArray("entries");
+                if (entries == null) throw new IllegalArgumentException("网盘视频列表不完整，请重新打开目录");
+                for (int index = 0; index < entries.length(); index++) {
+                    JSONObject entry = entries.optJSONObject(index);
+                    if (entry == null) continue;
+                    if (!passed) {
+                        if (completedId.equals(entry.optString("fsId"))) passed = true;
+                    } else if (!entry.optBoolean("isDir") && entry.optInt("category") == 1
+                            && !entry.optString("fsId").isEmpty() && path.equals(BaiduDrive.parentPath(entry.optString("path")))) {
+                        next = entry; break;
+                    }
+                }
+            } catch (IllegalArgumentException problem) { error = problem.getMessage(); }
+            catch (RuntimeException problem) { error = "暂时无法读取下一集，请稍后重试"; }
+            final JSONObject listing = result, selected = next;
+            final boolean foundCurrent = passed;
+            final String message = error;
+            handler.post(() -> {
+                if (request != driveRequest || isFinishing() || driveCourse != course || !autoplayPending) return;
+                if (!foreground || !store.canWatch(child)) {
+                    autoplayPending = false; driveLoading = false; render();
+                    if (foreground) toast(store.blockedReason(child));
+                    return;
+                }
+                if (!driveCourseAvailable()) { exitDrive(); toast("家长更新了课程，请从首页重新打开"); return; }
+                if (!message.isEmpty()) {
+                    autoplayPending = false; driveLoading = false; driveError = message; render(); toast("自动连播已停止，请检查网络后重试"); return;
+                }
+                driveListing = listing; driveStart = start;
+                if (selected != null) {
+                    driveFocusTag = "drive-file-" + selected.optString("fsId");
+                    android.util.Log.i("GuoranTV", "自动连播：打开同目录下一集");
+                    playDriveFile(selected);
+                } else if (listing.optBoolean("hasMore") && listing.optJSONArray("entries").length() > 0) {
+                    findNextDriveVideo(course, path, completedId, foundCurrent, start + 100, null, request);
+                } else {
+                    autoplayPending = false; driveLoading = false; render();
+                    toast(foundCurrent ? "这个文件夹已经看完啦" : "视频列表已变化，请重新选择视频");
+                }
+            });
+        });
+    }
+
     private void backDrive() {
         if (driveCourse == null) { exitDrive(); return; }
         String courseRoot = driveCourse.optJSONObject("baidu").optString("path");
@@ -1008,7 +1086,7 @@ public final class MainActivity extends Activity {
     }
 
     private void exitDrive() {
-        driveRequest++; driveCourse = null; driveListing = null; driveLoading = false; driveFocusTag = "";
+        driveRequest++; driveCourse = null; driveListing = null; driveLoading = false; autoplayPending = false; driveFocusTag = "";
         baidu.closeStreams(); page = "home"; render();
     }
 
@@ -1323,10 +1401,14 @@ public final class MainActivity extends Activity {
         target.setOnCompletionListener(mp -> {
             if (video != target) return;
             probePlayback(true);
+            JSONObject completed = playingResource;
             String key = "position-" + child + "-" + playingId;
             stopVideo();
             playback.edit().remove(key).apply();
-            page = driveCourse == null ? "home" : "drive"; render(); toast("这段视频看完啦");
+            page = driveCourse == null ? "home" : "drive";
+            if (!store.canWatch(child)) { render(); toast(store.blockedReason(child)); return; }
+            if (continueDrivePlayback(completed)) return;
+            render(); toast("这段视频看完啦");
         });
         target.setOnErrorListener((mp, what, extra) -> {
             if (video == target) {

@@ -188,7 +188,7 @@ public final class Store {
         }
         if (!data.has("displayName")) data.put("displayName", "果然 TV");
         if (!data.has("watch")) data.put("watch", object("dailyLimit", 0, "startTime", "00:00", "endTime", "00:00",
-                "sessionLimit", 30, "breakMinutes", 10, "usedSeconds", 0, "sessionSeconds", 0,
+                "sessionLimit", 60, "breakMinutes", 10, "usedSeconds", 0, "sessionSeconds", 0,
                 "usageDate", today(), "restUntil", 0L, "idleSince", 0L, "overrideUntil", 0L, "extraSeconds", 0, "paused", false));
         if (data.optInt("schemaVersion") < 5) { data.put("schemaVersion", 5); persist(); }
     }

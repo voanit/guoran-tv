@@ -76,7 +76,7 @@
             <label class="field" for="daily-limit">每日总时长 <span class="input-with-unit"><input id="daily-limit" name="dailyLimit" type="number" inputmode="numeric" min="0" max="1440" step="1" required><span>分钟</span></span></label>
             <p class="tiny field-help">0 表示不限每日总量；加时仅对今天生效。亮屏使用盒子的时间会累计，切换应用不重新计时。</p>
             <div class="time-grid"><label class="field" for="session-limit">每次连续使用<input id="session-limit" type="number" min="1" max="180" required></label><span class="time-dash">分钟</span><label class="field" for="break-minutes">然后休息<input id="break-minutes" type="number" min="1" max="180" required></label></div>
-            <p class="tiny field-help">默认连续使用 30 分钟、休息 10 分钟。关屏休息也会计入间隔。</p>
+            <p class="tiny field-help">默认连续使用 60 分钟、休息 10 分钟。关屏休息也会计入间隔。</p>
             <div class="time-grid"><label class="field" for="start-time">从几点开始<input id="start-time" name="startTime" type="time" required></label><span class="time-dash" aria-hidden="true">—</span><label class="field" for="end-time">到几点结束<input id="end-time" name="endTime" type="time" required></label></div>
             <p id="schedule-help" class="tiny field-help">起止相同表示全天可用；结束时间较早表示跨午夜。到点会显示休息页，家长 PIN 可临时解锁 10 分钟。</p>
             <p id="watch-capability" class="tiny field-help"></p>
